@@ -1,0 +1,52 @@
+#!/bin/bash
+#SBATCH --job-name=kofam_roary_rep
+#SBATCH --output=/bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/structure/functional_annotation/kofamscan/kofam_roary_rep.%j.out
+#SBATCH --error=/bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/structure/functional_annotation/kofamscan/kofam_roary_rep.%j.err
+#SBATCH --time=24:00:00
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=32G
+
+set -euo pipefail
+
+PROJECT=/bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS
+OUTDIR=${PROJECT}/structure/functional_annotation/kofamscan
+INPUT=${OUTDIR}/roary_cluster_representatives.faa
+
+PROFILE_DIR=/bigdata/roperlab/nginn001/databases/ko_profiles.03.26.26
+KO_LIST=/bigdata/roperlab/nginn001/databases/ko_list.03.25.26
+
+CONDA_BASE=/opt/linux/rocky/8.x/x86_64/pkgs/miniconda3/py39_4.12.0
+KOFAM_ENV=/opt/linux/rocky/8.x/x86_64/pkgs/kofamscan/1.3.0/env
+
+mkdir -p "${OUTDIR}"
+cd "${OUTDIR}"
+
+unset -f conda || true
+unset -f __conda_activate || true
+unset -f __conda_exe || true
+unset -f __conda_hashr || true
+unset CONDA_EXE CONDA_PREFIX CONDA_PROMPT_MODIFIER CONDA_DEFAULT_ENV CONDA_SHLVL _CE_M _CE_CONDA || true
+
+export PATH="${CONDA_BASE}/bin:${PATH}"
+source "${CONDA_BASE}/etc/profile.d/conda.sh"
+conda activate "${KOFAM_ENV}"
+
+echo "INPUT=${INPUT}"
+echo "PROFILE_DIR=${PROFILE_DIR}"
+echo "KO_LIST=${KO_LIST}"
+
+test -f "${INPUT}"
+test -d "${PROFILE_DIR}"
+test -f "${KO_LIST}"
+
+echo "Representative protein count:"
+grep -c '^>' "${INPUT}"
+
+exec_annotation \
+  -p "${PROFILE_DIR}" \
+  -k "${KO_LIST}" \
+  --cpu "${SLURM_CPUS_PER_TASK}" \
+  -o "${OUTDIR}/kofamscan_results.tsv" \
+  "${INPUT}"
+
+echo "KOfamScan finished."
