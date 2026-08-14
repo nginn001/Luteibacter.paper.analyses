@@ -98,13 +98,13 @@ Closest matches:
 
 This suggests that all of our strains are novel species not represented in NCBI, but are all in the Luteibacter genus
 
-## Roary Pangenome
+# Roary Pangenome
 more information on roary here: https://sanger-pathogens.github.io/Roary/
 
 - Roary requires .gff files that have the annotation and then the fasta sequence at the end. This is what the output from Prokka looks like. Since we annotated using bactka, we need to convert the .gff file (symlinks) to this compatable format
 submit slurm job:
     - [06a_make_roary_gffs.sh](Pangenome/06a_make_roary_gffs.sh)
-#### Now run Roary (split paralogs)
+### Now run Roary (split paralogs)
 By default, Roary uses synteny to split identical or highly similar sequences into separate clusters
 
 [06_run_roary.sh](Pangenome/06_run_roary.sh)
@@ -116,11 +116,11 @@ Shell             6675  (in 15-95% of strains)
 Cloud             5248  (in <15% of strains) rare, accessory, strain specific
 Total            12438 
 ```
-#### Repeated Roary with no split paralogs option (gets gene copy number information)
+### Repeated Roary with no split paralogs option (gets gene copy number information)
 - "-s" and save new files in structure/phylogeny/roary_nosplit
 - this clusters paralogs into the same cluster and keeps all of the locus tags, which can be converted to counts
 
-### Create Core gene Phylogeny using IQ-Tree
+## Create Core gene Phylogeny using IQ-Tree
 Submit slurm job: [07_run_iqtree.sh](Pangenome/07_run_iqtree.sh)
 - The Best-fit model by BIC: GTR+F+G4
 - 7 identical sequences in the core alignment were ignored (clones); 89 strains?
@@ -154,7 +154,7 @@ Output files
 - Convert gene_presence_absence file into a binary format
     - Run [make_gene_presence_absence_binary.py](Pangenome/make_gene_presence_absence_binary.py)
 
-#### Convert gene_presence_absence.csv to a gene count table
+### Convert gene_presence_absence.csv to a gene count table
 - use the no split paralogs Roary output
 Run [08_make_gene_count_matrix_nosplit.py](Pangenome/08_make_gene_count_matrix_nosplit.py)
 ```sh
@@ -255,7 +255,7 @@ Input 12,435 representative protein clusters
  cd /bigdata/roperlab/nginn001/databases/pfam
  wget -O Pfam-A.hmm.gz https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
  ```
-#### Run hmmscan (Pfam) and parse
+### Run hmmscan (Pfam) and parse
 ```sh
 cd /bigdata/roperlab/nginn001/databases/pfam
 gunzip Pfam-A.hmm.gz
@@ -270,7 +270,7 @@ python 04_parse_pfam_domtblout_besthit.py \
   --domtblout /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/structure/functional_annotation/pfam/pfam.domtblout \
   --out_tsv /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/structure/functional_annotation/pfam/pfam_besthit.tsv
 ```
-#### Parse the BRITE file
+### Parse the BRITE file
 run [parse_brite_ko00001.py](<Functional annotations/parse_brite_ko00001.py>)
 ```sh
 module load miniconda3
@@ -286,7 +286,7 @@ K12407	09100	Metabolism	09101	Carbohydrate metabolism	ko00010	Glycolysis / Gluco
 K00845	09100	Metabolism	09101	Carbohydrate metabolism	ko00010	Glycolysis / Gluconeogenesis	glk; glucokinase [EC:2.7.1.2]
 K25026	09100	Metabolism	09101	Carbohydrate metabolism	ko00010	Glycolysis / Gluconeogenesis	glk; 
 ```
-#### Parse kofamscan results and map to tables
+### Parse kofamscan results and map to tables
 Run [02_parse_kofamscan_besthit.py](<Functional annotations/02_parse_kofamscan_besthit.py>)
 This will:
 - keeps the top KO hit per representative cluster... whether or not it had * (met the threshold)
@@ -305,7 +305,7 @@ python 02_parse_kofamscan_besthit.py \
 >   --list_pathway /bigdata/roperlab/nginn001/databases/kegg_maps_2026_04_15/list_pathway.2026_04_15.tsv \
 >   --out_besthit /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/structure/functional_annotation/kofamscan/kofamscan_besthit_annotations.tsvp /bigdata/roperlab/nginn001/databases/kegg_maps_2026_04_15/kegg_ko_to_pfam.tsv
 ```
-#### Put it all TOGETHER
+### Put it all TOGETHER
 Create file annotation folder
 ```sh
 mkdir -p /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/structure/functional_annotation/final_annotations
@@ -340,19 +340,275 @@ BRITE B features written: 46
 BRITE C features written: 263
 Pfam features written: 2290
 ```
+## Annotate Roary no split paralog output clusters.
+Input: /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/structure/phylogeny/roary_nosplit/pan_genome_reference.fa
+#### Create file with Roary groups, but .faa (amino acid seqs) format
+Run [00_nosplit.py](<Functional annotations/00_nosplit.py>)
+```sh
+conda create -n roary_kofam python=3.9 biopython -y #instal biopython
+conda activate roary_kofam
+
+python 00_nosplit.py \
+  --clustered_proteins /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/structure/phylogeny/roary_nosplit/clustered_proteins \
+  --faa_dir /bigdata/roperlab/nginn001/KU_Luteibacter/faa.protein_files_bakta/ \
+  --out_faa /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/structure/functional_annotation/kofamscan/no_split/roary_no_split_cluster_representatives.faa \
+  --out_map /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/structure/functional_annotation/kofamscan/no_split/roary_no_split_cluster_representatives.tsv \
+  --out_missing /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/structure/functional_annotation/kofamscan/no_split/roary_no_split_cluster_representatives.missing.tsv \
+  --pick longest
+```
+Output
+```sh
+Loaded protein sequences: 357222
+Clusters parsed: 12330
+Representative sequences written: 12327
+Clusters with no members found in .faa files: 3
+Total missing cluster-member IDs: 23
+```
+Run script [01_nosplit](<Functional annotations/01_nosplit>) using the most up to date databases and the newly created roary_cluster_representatives.faa.
 ### Interactively plotting in R on local device
+Files produced above and used in this analysis
+- [roary_clusters_with_all_annotations.tsv](<Functional annotations/roary_clusters_with_all_annotations.tsv>) (Supplemental Table S12 in manuscript)
+- [genome_metadata_with_files.tsv](<genome_metadata_with_files.tsv>)
 
+Analyses and plotting code:
+[functional.enrichment.R](<Functional annotations/functional.enrichment.R>)
 
-
-
+Outfiles and figures
+- produces Figure 4a-c and Supplemental Figure S5
+- [sig.ko.sorted.in.cats.filt.5_1_26.unit.names.xlsx](<Functional annotations/sig.ko.sorted.in.cats.filt.5_1_26.unit.names.xlsx>)
+- [Supp.Table.S13.BRITE.B.KW.results.xlsx](<Functional annotations/Supp.Table.S13.BRITE.B.KW.results.xlsx>)
+- [Supp.Table.S14.KO.KW.results.xls](<Functional annotations/Supp.Table.S14.KO.KW.results.xlsx>)
 
 # Genome-wide association studies (GWAS)
-## SNP calling
+questions:
+- Which genes/SNPs are associated with osmotic tolerance?
+- Which genomic features differ across species/site groups?
+- Which signals persist within species, not just across species?
+- GWAS by site or region is too confounded by species
+### Input files
+- /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/structure/phylogeny/roary/gene_presence_absence.Rtab
+- near_clone_drop.txt
+  - I created this file locally and uploaded to HPC
+  - Removed strains that have 99.9-100% similarity, MASH dist of 0, and have very similar phenotype
+  - SNP VCF file
+### Strain derplication
+- For the dereplicated strain GWAS, this is a phenotype-aware, maximal-retention filtering pass, so it is intentionally conservative. It removes only the most obvious redundancies with the following rules:
+  - strains with >99.99% ANI were evaluated
+  - For strain clusters >99.99% ANI, but had very different phenotypes, I kept strains with differening phenotypes
+  - When possible I prioitized keeping strains that have phenotype data for both NaCl and PEG assays.
+This resulted in the exclusion of 20 strains
+exclusion strains:
+```sh
+KNZ2-5D
+KNZ2-6D
+KNZ12-10F
+KNZ12-1A
+KNZ12-7H
+KNZ1-1H
+TLI6-11F
+TLI6-IE
+TLI6-1G
+TLI6-5H
+TLI6-8H
+TLI6-4A
+TLI7-6A
+TLI8-4H
+TLI8-9D
+TLI8-10B
+TLI9-1C
+TLI9-11B
+TLI9-11C
+SVR3-5F
+```
+## SNP calling (Create SNP VCF file)
+- use snippy/4.6.0 module on the HPC
+- From my genomes I selected KNZ12-1B and SVR3-8D as the reference genomes because:
+  - I wanted to use specie 1 as a reference
+  - This strain had the lowest number of contigs and had phenotyped for both NaCl and PEG within their sites
+```sh
+cd /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS
+mkdir -p gwas/{inputs,scripts,logs,snippy/all,snippy/sp1,vcf}
+```
+run [06_make_snippy_sample_lists.py](GWAS/snippy/06_make_snippy_sample_lists.py)
+```sh
+module load miniconda3
+conda create -n gwas_py python=3.9 pandas -y
+conda activate gwas_py
+python /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/gwas/scripts/06_make_snippy_sample_lists.py
+```
+output
+```sh
+Wrote:
+/bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/gwas/inputs/snippy_all_samples.tsv
+/bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/gwas/inputs/snippy_sp1_samples.tsv
+All genomes: 96
+sp1 genomes: 56
+```
+Now run: 
+-  [7_run_snippy_all.sh](GWAS/snippy/07_run_snippy_all.sh) (KNZ reference)
+-  [08_run_snippy_sp1.sh](GWAS/snippy/08_run_snippy_sp1.sh) (KNZ reference)
+-  [09_run_snippy_all_SVRref.sh](GWAS/snippy/09_run_snippy_all_SVRref.sh) (SVR reference)
+
+This produced snippy results foleder per strain for each run. Note: I used FASTA files, so the SNPs are not annotated. We can map to significant SNPs back to the .gff3 files after the GWAS.
+
+- ** I decided to make the SVR reference just for SVR strains. So, I deleted the non-SVR folders produced by "09_run..."
+
+Now run snippy core to combine all of the per strain SNPs into a single dataset to get a core (multi-genomes) SNP alignment. Note: it will only keep SNP positions where all genomes have a valid base call (core):
+- [10_run_snippy_core_all.sh](GWAS/snippy/10_run_snippy_core_all.sh)
+- [11_run_snippy_core_sp1.sh](GWAS/snippy/11_run_snippy_core_sp1.sh)
+- [12_run_snippy_core_all_SVRref.sh](GWAS/snippy/12_run_snippy_core_all_SVRref.sh) <- this will be SVR strains ONLY
 
 ## GWAS using Pyseer
-#
+### GWAS plan (12 separate GWASs):
+Genome subsets:
+1. all genomes 
+2. all genomes, minus the clones in the "clones_to_exclude.txt" 
+3. sp1 genomes 
+4. sp1 genomes, minus the clones in the "clones_to_exclude.txt" 
+5. SVR site genomes
+6. SVR site genomes, minus the clones in the "clones_to_exclude.txt"
+Phenotypes:
+1. log10_relative_growth_nacl
+2. log10_relative_growth_peg
+Type (both can be completed in one run/job):
+1. Gene presence/absence
+2. SNPs
 
+### Input files:
+```sh
+# MASH distance (square): controls for genome structure
+/bigdata/KU_Luteibacter/microGWAS/structure/mash/mash_dist_matrix.tsv
+# Metadata
+/bigdata/KU_Luteibacter/microGWAS/structure/metadata/genome_metadata_with_files.tsv
+# Clone list
+/bigdata/KU_Luteibacter/microGWAS/gwas/inputs/clones_to_exclude.txt
+# Gene matrix
+/bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/structure/phylogeny/roary/gene_presence_absence.Rtab
+# Master VCFs from snippy-core
+/bigdata/KU_Luteibacter/microGWAS/gwas/vcf/all_genomes_knz12_1b/core.vcf.gz
+/bigdata/KU_Luteibacter/microGWAS/gwas/vcf/sp1_knz12_1b/core.vcf.gz
+/bigdata/KU_Luteibacter/microGWAS/gwas/vcf/SVR_genomes_svr3_8d/core.vcf.gz
+```
+### Pipeline details
+Each of the 12 runs will create a run directory with:
+- phenotypes.tsv
+- strains.txt
+- genes.Rtab
+- mash.tsv
+- variants.vcf.gz
+- variants.vcf.gz.csi
 
+Then, a Slurm job runs:
+pyseer --pres genes.Rtab ... > genes_pyseer.tsv
+pyseer --vcf variants.vcf.gz ... > snps_pyseer.tsv
 
+### Make run folders and subset input files
+run [01_prepare_pyseer_runs.py](GWAS/pyseer/01_prepare_pyseer_runs.py)
+```sh
+module load bcftools
+source /opt/linux/rocky/8.x/x86_64/pkgs/miniconda3/py39_4.12.0/etc/profile.d/conda.sh
+conda activate gwas_py
+python 01_prepare_pyseer_runs.py
+```
+output
+```sh
+Prepared /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/gwas/runs/01_all_nacl with 94 strains
+Prepared /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/gwas/runs/01_all_peg with 71 strains
+Prepared /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/gwas/runs/02_all_noclone_nacl with 75 strains
+Prepared /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/gwas/runs/02_all_noclone_peg with 60 strains
+Prepared /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/gwas/runs/03_sp1_nacl with 54 strains
+Prepared /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/gwas/runs/03_sp1_peg with 38 strains
+Prepared /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/gwas/runs/04_sp1_noclone_nacl with 36 strains
+Prepared /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/gwas/runs/04_sp1_noclone_peg with 28 strains
+Prepared /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/gwas/runs/05_SVR_nacl with 38 strains
+Prepared /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/gwas/runs/05_SVR_peg with 31 strains
+Prepared /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/gwas/runs/06_SVR_noclone_nacl with 37 strains
+Prepared /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/gwas/runs/06_SVR_noclone_peg with 30 strains
+```
+### Install pyseer using interactive job on HPC
+```sh
+srun -p short -t 02:00:00 --mem=32G --cpus-per-task=4 --pty bash
+module load miniconda3
+conda create -n pyseer_env -c conda-forge -c bioconda -c defaults pyseer -y
+# once it completes
+exit # leave the compute node interactive job
+```
+test that it worked
+```sh
+conda activate pyseer_env
+which pyseer
+pyseer --version
+# pyseer 1.4.1
+```
+## Pyseer runs
+Run [03_submit_all_pyseer.sh](GWAS/pyseer/03_submit_all_pyseer.sh), which will pass each of the 12 genomes subsets to [02_run_pyseer_subset.sh](GWAS/pyseer/02_run_pyseer_subset.sh). This will submit 12 jobs running 24 GWAS.
+```sh
+bash 03_submit_all_pyseer.sh
+```
+I tested the 02 scripts before launching all of the runs with the 03 script
+```sh
+sbatch 02_run_pyseer_subset.sh \
+/bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS/gwas/runs/01_all_nacl
+```
+### Map SNP positions back to reference genome .gff3 file to get gene names
+Currently the names are locus positions, e.g. contig_1_1144_C_G
+We need to extract the locus tag / gene ID / gene name / product from the GFF file
+Two references
+- KNZ12-1B.gff3 for all and sp1 runs
+- SVR3-8D.gff3 for SVR subset
+Then this will map to our full final annotations to get KO, KEGG, and pfam annotations for the SNPs
+
+RUN [05_submit_all_snp_annotation.sh](GWAS/pyseer/05_submit_all_snp_annotation.sh) which will submit a slurm job for each folder using [04_annotate_pyseer_snps.slurm.sh](GWAS/pyseer/04_annotate_pyseer_snps.slurm.sh), which passes to use this python script[04_annotate_pyseer_snps.py](GWAS/pyseer/04_annotate_pyseer_snps.py). 
+
+```sh
+bash 05_submit_snp_annotations.sh 
+```
+## GWAS hit analyses
+- moved all of the genes_pyseer.tsv and snps_pyseer.tsv files to local device and work in Rstudio.
+### Narrow down candidate genes
+None of the FDR corrected p-values were significant, likely because my # of strains is pretty low. So, I focused on gene clusters where ltr-p-value was <0.10. Then if a gene cluster was a hit for 4 or more GWAS runs within either gene or SNPs focused runs I consider it a candidate. I also considered gene clusters that met that p-value cut off and was significant in the sp1 no clones run a candidate.
+- Candates fall into the following catagories
+  - osmotic
+  - membrane_transport
+  - motility
+  - metabolism
+  - phage
+- Top candidates based on annotations
+  - otsB (trehalose)
+  - efflux pump
+  - glycosyltransferase
+  - trxA
+  - motility gene
+
+beta > 0 → allele increases phenotype
+beta < 0 → allele decreases phenotype
+
+### Sorting and plotting code
+[pyseer.GWAS.results.R](GWAS/pyseer/pyseer.GWAS.results.R)
+
+Outputs:
+- [Supp.Table.S15.GWAS.candidate.stats.xlsx](GWAS/pyseer/Supp.Table.S15.GWAS.candidate.stats.xlsx)
+- Figure 5
+- Table 1
 
 # Phage related analyses
+Prophage regions were annotated from Luteibacter whole genome nucleotide sequences using PHASTER (PHAge Search Tool Enhanced Release) webserver
+Citation: Arndt, D., Grant, J., Marcu, A., Sajed, T., Pon, A., Liang, Y., Wishart, D.S. (2016) PHASTER: a better, faster version of the PHAST phage search tool. Nucleic Acids Res., 44(Web Server issue): W16-W21
+- Summary of results: [Supp.Table.S16.Prophage.information.xlsx](Phage/Supp.Table.S16.Prophage.information.xlsx)
+
+## Creating prophage tree file
+1. cluster phage regions: [cluster.phage.sh](Phage/cluster.phage.sh) # identified 8 clusters
+2. Alignment phage sequences with MAFFT, trim with trimAI, and build tree with IQtree: [full_phylogeny.sh](Phage/full_phylogeny.sh)
+
+## R analysis and plotting
+Analysis completed in R using: [lute.phage.analysis.May2026.R](Phage/lute.phage.analysis.May2026.R)
+
+### Input files
+- [full.phage.region.treefile](Phage/full.phage.region.treefile)
+- [luteibacter_core.treefile](Phage/luteibacter_core.treefile) (this is an output from Roary)
+- [phaster_phage_prediction_results.xlsx](Phage/phaster_phage_prediction_results.xlsx)
+
+### outputs
+- Figure 6
+- Supplemental Figure S6
+
