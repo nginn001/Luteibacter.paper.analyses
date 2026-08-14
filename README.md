@@ -1,5 +1,5 @@
 # Lutiebacter paper analyses
-Final workflow and code for manuscript
+## *Not peer-reviewed yet* Workflow and code for draft manuscript to be shared with co-authors and reviewers.
 
 # Kansas precipitation gradient map
 Total annual precipitation for each Kansas county was collected from NOAA National Centers for Environmental Information (NCEI)
