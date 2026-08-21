@@ -613,3 +613,10 @@ Analysis completed in R using: [lute.phage.analysis.May2026.R](Phage/lute.phage.
 - Figure 6
 - Supplemental Figure S6
 
+## Contact
+Nichole Ginnan, Ph.D.     
+Assistant Project Scientist      
+Dept. of Microbiology and Plant Pathology      
+University of California, Riverside       
+nginn001@ucr.edu | [www.nicholeginnan.com]   
+
