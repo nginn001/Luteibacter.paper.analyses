@@ -1,4 +1,4 @@
-# Lutiebacter paper analyses
+# *Luteibacter* paper analyses
 ## *Not peer-reviewed yet*
 ### Workflow and code for draft manuscript to be shared with co-authors and reviewers.
 
@@ -7,7 +7,7 @@ Total annual precipitation for each Kansas county was collected from NOAA Nation
 - [Total annual precipitation data](<Kansas precipitation gradient map/PrecipTotal-2010-2020.csv>)
 - [Code related to Figure 1a Kansas annual precipitation map](<Kansas precipitation gradient map/Kansas_map_precip.R>)
 
-# Quantitative osmotic stress phenotyping of select Luteibacter strains.
+# Quantitative osmotic stress phenotyping of select *Luteibacter* strains.
 - [Supplemental Table S3. CellTiterBlue assay data](<Strain osmotic stress phenotype analysis/Supp.Table.S3.CellTiterBlue.assay.measurements.that.passed.qualifty.filtering.xlsx>)
 - [Number of technical reps per biological reps](<Strain osmotic stress phenotype analysis/Supp.Table.S2. Number of technical reps per biological rep after filtering.xlsx>)
 - [Code for the analyses related to Figures 1b and 2a-d](<Strain osmotic stress phenotype analysis/growth.assay.analyses.R>)
@@ -54,17 +54,17 @@ run [04_run_fastani_within.sh](<Genome structure/04_run_fastani_within.sh>)
 summarize results: [05_summarize_ani.R](<Genome structure/05_summarize_ani.R>)
 - [Supp.Table.S7. ANI matrix.xls](<Genome structure/Supp.Table.S7. ANI matrix.xlsx>)
 
-## Comparison to reference Luteibacter species genomes
-### Downloaded Luteibacter genomes from NCBI
+## Comparison to reference *Luteibacter* species genomes
+### Downloaded *Luteibacter* genomes from NCBI
 NCBI RefSeq
-- Luteibacter pinisoli MAH-14; GCF_006385595.1; from rhizosphere of Korean Pine Tree
-- L. rhizovicinus DSM 16549; GCF_001887595.1; from rhizosphere of barley, Denmark
-- L. mycovicinus DSM 112764; GCF_000745235.1; fungal endophyte
-- L. jiangsuensis W1I16; GCF_050434905.1; wheat rhizosphere, Washington State
-- L. anthropi SM7.4; GCF_023699965.1; Artificial bog, Chapel Hill, USA
-- L. aegosomaticola 335; GCF_023078475.1; from longhorn beetle, South Korea
-- L. yeojuensis DSM 17673; GCF_011742875.1; greenhouse soil, South Korea
-- L. flocculans EIF3; GCF_023612255.1;from eutrophic pond water, Germany
+- *Luteibacter pinisoli* MAH-14; GCF_006385595.1; from rhizosphere of Korean Pine Tree
+- *L. rhizovicinus* DSM 16549; GCF_001887595.1; from rhizosphere of barley, Denmark
+- *L. mycovicinus* DSM 112764; GCF_000745235.1; fungal endophyte
+- *L. jiangsuensis* W1I16; GCF_050434905.1; wheat rhizosphere, Washington State
+- *L. anthropi* SM7.4; GCF_023699965.1; Artificial bog, Chapel Hill, USA
+- *L. aegosomaticola* 335; GCF_023078475.1; from longhorn beetle, South Korea
+- *L. yeojuensis* DSM 17673; GCF_011742875.1; greenhouse soil, South Korea
+- *L. flocculans* EIF3; GCF_023612255.1;from eutrophic pond water, Germany
 
 ```sh
 wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/006/385/595/GCF_006385595.1_ASM638559v1/GCF_006385595.1_ASM638559v1_genomic.fna.gz
@@ -97,7 +97,7 @@ Closest matches:
 - HAY strain = 85.7533 ANI to L. yeojuensis DSM 17673; GCF_011742875.1
 - TLI & KNZ strains = 90.4 - 90.6 ANI to L. jiangsuensis W1I16; GCF_050434905.1
 
-This suggests that all of our strains are novel species not represented in NCBI, but are all in the Luteibacter genus
+This suggests that all of our strains are novel species not represented in NCBI, but are all in the *Luteibacter* genus
 
 # Roary Pangenome
 more information on roary here: https://sanger-pathogens.github.io/Roary/
