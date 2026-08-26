@@ -424,7 +424,7 @@ SVR3-5F
 ## SNP calling (Create SNP VCF file)
 - use snippy/4.6.0 module on the HPC
 - From my genomes I selected KNZ12-1B and SVR3-8D as the reference genomes because:
-  - I wanted to use specie 1 as a reference
+  - I wanted to use species 1 as a reference
   - This strain had the lowest number of contigs and had phenotyped for both NaCl and PEG within their sites
 ```sh
 cd /bigdata/roperlab/nginn001/KU_Luteibacter/microGWAS
@@ -567,19 +567,7 @@ bash 05_submit_snp_annotations.sh
 ## GWAS hit analyses
 - moved all of the genes_pyseer.tsv and snps_pyseer.tsv files to local device and work in Rstudio.
 ### Narrow down candidate genes
-None of the FDR corrected p-values were significant, likely because my # of strains is pretty low. So, I focused on gene clusters where ltr-p-value was <0.10. Then if a gene cluster was a hit for 4 or more GWAS runs within either gene or SNPs focused runs I consider it a candidate. I also considered gene clusters that met that p-value cut off and was significant in the sp1 no clones run a candidate.
-- Candates fall into the following catagories
-  - osmotic
-  - membrane_transport
-  - motility
-  - metabolism
-  - phage
-- Top candidates based on annotations
-  - otsB (trehalose)
-  - efflux pump
-  - glycosyltransferase
-  - trxA
-  - motility gene
+None of the FDR corrected p-values were significant, likely because my # of strains is very low per GWAS. So, I focused on gene clusters where ltr-p-value was <0.10. Then if a gene cluster was a hit for 4 or more GWAS runs within either gene or SNPs focused runs I consider it a candidate. I also considered gene clusters that met that p-value cut off and was significant in the sp1 no clones run a candidate.
 
 beta > 0 → allele increases phenotype
 beta < 0 → allele decreases phenotype
