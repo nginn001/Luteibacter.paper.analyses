@@ -13,7 +13,7 @@ Total annual precipitation for each Kansas county was collected from NOAA Nation
 - [Code for the analyses related to Figures 1b and 2a-d](<Strain osmotic stress phenotype analysis/growth.assay.analyses.R>)
 
 # Whole genome assembly and annotation
-- Raw sequences and assembled whole genoms are available on NCBI SRA/GenBank under [BioProject PRJNA1300453](<https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1300453>)
+- Raw sequences and assembled whole genomes are available on NCBI SRA/GenBank under [BioProject PRJNA1300453](<https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA1300453>)
 
 - Bash scripts (created by Brian Sanderson):
     - [fastp.quality.filtering.sh](<Genome assembly and annotation/01_fastp.sh>)
@@ -148,7 +148,7 @@ NOTE: TLI9-3A (identical to TLI6-1G) is ignored but added at the end
 Output files
 - luteibacter_core.contree (bootstrap consensus tree; plot this)
     - I used iToL to plot this: [luteibacter_core.contree](Pangenome/luteibacter_core.contree)
-    - The colapsed version is Figure 3a
+    - The colapsed version is **Figure 3a**
 
 - luteibacter_core.treefile (ML tree with branch lengths)
 
@@ -177,8 +177,8 @@ Then blast uncharacterized groups sequence on InterProScan (https://www.ebi.ac.u
 
 ### Interactively plotting in R on local device
 [copy_number_var.R](Pangenome/copy_number_var.R)
-- Plot single copy genes in venn diagrams comparing site and lineages
-- Analyzed and plot copy number variance
+- Plot single copy genes in venn diagrams comparing site and lineages **(Fig. 3c)**
+- Analyzed and plot copy number variance **(Supplemental Fig S4)**
 - Compare genome size
 
 # Functional annotations for Roary gene clusters (KO, KEGG, & Pfams)
