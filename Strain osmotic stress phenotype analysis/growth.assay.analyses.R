@@ -183,51 +183,63 @@ ggsave(filename= "NaCl.0.3.RFU.site.bioReps.pdf", device="pdf", units="mm", dpi=
 #######################################################################
 # Fig. 2c. Growth trade offs NaCl 1.8% and control conditions #########
 #######################################################################
+##### Subset NaCL (1.8%) ######
+NaCl.1.8.raw <- NaCl_data %>% filter(NaCl.concentration == 1.8) # all strains
+tehc.rep.count.NaCl.1.8.raw<-NaCl.1.8.raw %>% group_by(Strain) %>% summarize(count = n()) # sample size, biological reps; 3-6 technical reps per biological rep
+write.xlsx(tehc.rep.count.NaCl.1.8.raw, "/Users/nicholeginnan/Documents/KU/Luteibacter/scripts/NaCl_tech.rep.count.NaCl.1.8.raw.xlsx")
+NaCl.1.8.raw %>% group_by(Site.2) %>% summarize(count = n()) # sample size, includes all technical reps separatly
+# Average the technical reps for each biological rep
+avg.tech.reps.df.NaCl.1.8.raw <- NaCl.1.8.raw %>% group_by(Strain, Site.2) %>% summarise(avg_RFU = mean(RFU, na.rm = TRUE),across(-RFU, ~ first(.)),.groups = "drop")
+avg.tech.reps.df.NaCl.1.8.raw %>% group_by(Site.2) %>% summarize(count = n()) # sample size, biological reps per site
+#KNZ       60
+#TLI       63
+#WK        63
 # check dfs that will be included in this analysis
 avg.tech.reps.df
 avg.tech.reps.df$avg_RFU # average tech rep per biological reps for control conditions growth
 
-avg.tech.reps.df.NaCl.1.8.ratio
-avg.tech.reps.df.NaCl.1.8.ratio$avg_RFU_ratio #average tech rep per biological rep growth in NaCl 1.8% in the context of the control
+avg.tech.reps.df.NaCl.1.8.raw
+avg.tech.reps.df.NaCl.1.8.raw$avg_RFU #average tech rep per biological rep growth in NaCl 1.8% 
 
 #Add suffixes before joining dfs
 names(avg.tech.reps.df)[-1] <- paste0(names(avg.tech.reps.df)[-1], "_control")
-names(avg.tech.reps.df.NaCl.1.8.ratio)[-1] <- paste0(names(avg.tech.reps.df.NaCl.1.8.ratio)[-1], "_NaCl")
+names(avg.tech.reps.df.NaCl.1.8.raw)[-1] <- paste0(names(avg.tech.reps.df.NaCl.1.8.raw)[-1], "_NaCl")
 # Then join the df
-merged_df <- left_join(avg.tech.reps.df, avg.tech.reps.df.NaCl.1.8.ratio, by = "Strain")
-#### Regression of control and NaCl ratio (averaged technical reps)  ####
-model<-lm(log10(avg_RFU_ratio_NaCl)~sqrt(avg_RFU_control), data=merged_df)
+merged_df <- left_join(avg.tech.reps.df, avg.tech.reps.df.NaCl.1.8.raw, by = "Strain")
+merged_df.filtered <- merged_df %>%filter(Strain != "SVR5-12G") #outlier
+#### Regression of control and NaCl 1.8% (averaged technical reps)  ####
+model<-lm(log10(avg_RFU_NaCl)~sqrt(avg_RFU_control), data=merged_df.filtered)
 plot(resid(model)~fitted(model))
 summary(model)
 summary(model)$coefficients
 #                         Estimate   Std. Error    t value     Pr(>|t|)
-#(Intercept)            0.2655351209 1.140069e-01   2.329115 2.093887e-02
-#sqrt(avg_RFU_control) -0.0002195678 2.049177e-05 -10.714925 3.980360e-21
+#(Intercept)            6.579762e+00 1.134915e-01 57.975832 1.034893e-119
+#sqrt(avg_RFU_control) -1.908187e-05 2.034427e-05 -0.937948  3.495074e-01
 summary(model)$r.squared
-# 0.3842233
+# 0.004784358
 confint(model)
 #                           2.5 %        97.5 %
-#  (Intercept)            0.0406063346  0.4904639072
-#  sqrt(avg_RFU_control) -0.0002599969 -0.0001791388
+#(Intercept)            6.355842e+00 6.803682e+00
+#sqrt(avg_RFU_control) -5.922136e-05 2.105762e-05
 anova(model)
-#                        Df  Sum Sq  Mean Sq  F value    Pr(>F)    
-#sqrt(avg_RFU_control)   1   33.698   33.698  114.81  < 2.2e-16 ***
-#  Residuals            184  54.006   0.294
+#                       Df  Sum Sq  Mean Sq  F value  Pr(>F)    
+#sqrt(avg_RFU_control)   1  0.245 0.24520    0.8797 0.3495
+#Residuals             183 51.005 0.27871               
 
 # Create a new column with the transformed variables for plotting
-merged_df <- merged_df %>%
+merged_df.filtered <- merged_df.filtered %>%
   mutate(
     sqrt_control = sqrt(avg_RFU_control),
-    log_NaCl = log10(avg_RFU_ratio_NaCl) )
+    log_NaCl = log10(avg_RFU_NaCl) )
 # Plot
-ggplot(merged_df, aes(x = sqrt_control, y = log_NaCl, color=Site.2_control)) +
+ggplot(merged_df.filtered, aes(x = sqrt_control, y = log_NaCl, color=Site.2_control)) +
   geom_point(size = 3, alpha = 0.9) +  # data points
   geom_smooth(method = "lm", color = "#2e294e", se = TRUE) +  # regression line + CI
   scale_color_manual(values=c("#aa4465", "#ffa69e","#3d5a80"),limits=c("WK", "TLI", "KNZ")) + 
   #scale_fill_manual(values=c("#aa4465", "#ffa69e","#3d5a80"),limits=c("WK", "TLI", "KNZ")) +
   labs(x = "Control conditions growth (sqrt)",y = "NaCl-stressed growth (log10)") +
   theme_classic()+theme(legend.position = "none")
-ggsave(filename= "Control.NaCl1.8.tradeoff.regression.nolegend.pdf", device="pdf", units="mm", dpi=300, width=100, height=100, path="/Users/nicholeginnan/Documents/KU/Luteibacter/plots")
+ggsave(filename= "Control.NaCl1.8.tradeoff.regression.nolegend.raw_NaCl_values.pdf", device="pdf", units="mm", dpi=300, width=100, height=100, path="/Users/nicholeginnan/Documents/KU/Luteibacter/plots")
 
 #######################################################################
 # Fig. 2b. Luteibacter growth under increasing PEG concentrations #####
@@ -338,47 +350,60 @@ ggsave(filename= "PEG.10.RFU.site.bioReps.pdf", device="pdf", units="mm", dpi=30
 #######################################################################
 # Fig. 2d. Growth trade offs PEG 30% and control conditions #########
 #######################################################################
+##### Subset PEG (30%) ######
+PEG.30.raw <- PEG_data %>% filter(PEG.concentration == 30) # all strains
+tehc.rep.count.PEG.30.raw<-PEG.30.raw %>% group_by(Strain) %>% summarize(count = n()) # sample size, biological reps; 3-6 technical reps per biological rep
+write.xlsx(tehc.rep.count.PEG.30.raw, "/Users/nicholeginnan/Documents/KU/Luteibacter/scripts/NaCl_tech.rep.count.PEG.30.raw.xlsx")
+PEG.30.raw %>% group_by(Site.2) %>% summarize(count = n()) # sample size, includes all technical reps separatly
+# Average the technical reps for each biological rep
+avg.tech.reps.df.PEG.30.raw <- PEG.30.raw %>% group_by(Strain, Site.2) %>% summarise(avg_RFU = mean(RFU, na.rm = TRUE),across(-RFU, ~ first(.)),.groups = "drop")
+avg.tech.reps.df.PEG.30.raw %>% group_by(Site.2) %>% summarize(count = n()) # sample size, biological reps per site
+#KNZ       50
+#TLI       51
+#WK        54
 # check dfs that will be included in this analysis
-baseline_rfu
-baseline_rfu$RFU_baseline # average tech rep per biological reps for control conditions growth
+avg.tech.reps.df
+avg.tech.reps.df$avg_RFU # average tech rep per biological reps for control conditions growth
 
-avg.tech.reps.df.PEG.30.ratio.2 #outliers removed
-avg.tech.reps.df.PEG.30.ratio.2$avg_RFU_ratio #average tech rep per biological rep growth in PEG 30% in the context of the control
+avg.tech.reps.df.PEG.30.raw
+avg.tech.reps.df.PEG.30.raw$avg_RFU_PEG #average tech rep per biological rep growth in NaCl 1.8% 
 
 #Add suffixes before joining dfs
-names(baseline_rfu)[-1] <- paste0(names(baseline_rfu)[-1], "_control")
-names(avg.tech.reps.df.PEG.30.ratio.2)[-1] <- paste0(names(avg.tech.reps.df.PEG.30.ratio.2)[-1], "_PEG")
+names(avg.tech.reps.df)[-1] <- paste0(names(avg.tech.reps.df)[-1], "_control")
+names(avg.tech.reps.df.PEG.30.raw)[-1] <- paste0(names(avg.tech.reps.df.PEG.30.raw)[-1], "_PEG")
 # Then join the df
-merged_df <- left_join(baseline_rfu, avg.tech.reps.df.PEG.30.ratio.2, by = "Strain")
-#### Regression of control and PEG ratio (averaged technical reps)  ###
-model<-lm(log10(avg_RFU_ratio_PEG)~(RFU_baseline_control), data=merged_df)
+merged_df <- left_join(avg.tech.reps.df, avg.tech.reps.df.PEG.30.raw, by = "Strain")
+merged_df.filtered <- merged_df %>%filter(!Strain %in% c("KNZ2-4C", "SVR5-12G", "SVR3-9D"))  # outliers
+#### Regression of control and PEG 30% (averaged technical reps)  ####
+model<-lm(log10(avg_RFU_PEG)~sqrt(avg_RFU_control), data=merged_df.filtered)
 plot(resid(model)~fitted(model))
-nobs(model) # 151 strains included in the model
 summary(model)
 summary(model)$coefficients
 #                         Estimate   Std. Error    t value     Pr(>|t|)
-#(Intercept)            2.420872e-01 6.461909e-02   3.746372 2.558922e-04
-#RFU_baseline_control  2.744591e-08 1.898065e-09 -14.459948 3.625539e-30
+#(Intercept)            6.951233e+00 1.079978e-01 64.364596 3.733158e-111
+#sqrt(avg_RFU_control) -4.145774e-05 2.000818e-05 -2.072039  3.997376e-02
 summary(model)$r.squared
-# 0.35839036
+#  0.02782587
 confint(model)
 #                           2.5 %        97.5 %
-#  (Intercept)            1.143990e-01  3.697754e-01
-#  RFU_baseline_control --3.119651e-08 -2.369531e-08
+#(Intercept)            6.737840e+00  7.164626e+00
+#sqrt(avg_RFU_control) -8.099202e-05 -1.923463e-06
 anova(model)
-#                        Df  Sum Sq  Mean Sq  F value    Pr(>F)    
-# RFU_baseline_control   1   37.537  37.537  209.09   < 2.2e-16 ***
-#  Residuals            149 26.749   0.180
+#                       Df  Sum Sq  Mean Sq  F value  Pr(>F)    
+#sqrt(avg_RFU_control)   1  0.942 0.94190  4.2933 0.03997 *
+#Residuals             150 32.908 0.21938              
 
 # Create a new column with the transformed variables for plotting
-merged_df <- merged_df %>%
-  mutate(log_PEG = log10(avg_RFU_ratio_PEG) )
+merged_df.filtered <- merged_df.filtered %>%
+  mutate(
+    sqrt_control = sqrt(avg_RFU_control),
+    log_PEG = log10(avg_RFU_PEG) )
 # Plot
-ggplot(merged_df, aes(x = RFU_baseline_control, y = log_PEG, color=Site.2_PEG)) +
+ggplot(merged_df.filtered, aes(x = sqrt_control, y = log_PEG, color=Site.2_control)) +
   geom_point(size = 3, alpha = 0.9) +  # data points
   geom_smooth(method = "lm", color = "#2e294e", se = TRUE) +  # regression line + CI
   scale_color_manual(values=c("#aa4465", "#ffa69e","#3d5a80"),limits=c("WK", "TLI", "KNZ")) + 
   #scale_fill_manual(values=c("#aa4465", "#ffa69e","#3d5a80"),limits=c("WK", "TLI", "KNZ")) +
-  labs(x = "Control conditions growth",y = "PEG-stressed growth (log10)") +
+  labs(x = "Control conditions growth (sqrt)",y = "PEG-stressed growth (log10)") +
   theme_classic()+theme(legend.position = "none")
-ggsave(filename= "Control.PEG30.tradeoff.regression.nolegend.pdf", device="pdf", units="mm", dpi=300, width=100, height=100, path="/Users/nicholeginnan/Documents/KU/Luteibacter/plots")
+ggsave(filename= "Control.PEG1.8.tradeoff.regression.nolegend.with.raw.PEG.growth.pdf", device="pdf", units="mm", dpi=300, width=100, height=100, path="/Users/nicholeginnan/Documents/KU/Luteibacter/plots")
